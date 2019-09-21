@@ -12,7 +12,6 @@ class Observation(models.Model):
     species = models.ForeignKey('Species', on_delete=models.SET_NULL, null=True,)
     date_added = models.DateField('DATE_ADDED', auto_now_add=True)
     date_modified = models.DateField('DATE_MODIFIED', auto_now=True)
-    survey_start_date = models.DateField('SURVEY_START_DATE')
     latitudedd_num = models.FloatField('LATITUDEDD_NUM')
     longitudedd_num = models.FloatField('LONGITUDEDD_NUM')
     data = JSONField()

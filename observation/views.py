@@ -26,7 +26,7 @@ def upload_csv(request):
     dataset = csv_file.read().decode('UTF-8')
     io_string = io.StringIO(dataset)
 
-    csv_string = csv.reader(io_string, delimiter=',', quotechar='|')
+    csv_string = csv.reader(io_string, delimiter=',', quotechar='"')
     # csv_array, an array[i][j] where i and j is the row and column index respectively
     csv_array = []
     for row in csv_string:
@@ -46,6 +46,7 @@ def upload_csv(request):
     for field in Observation._meta.get_fields():
         observation_fields.append(field.name)
 
+    # going row by row in imported csv
     for row in csv_array[1::]:
     
         species_dict = {}
@@ -53,6 +54,7 @@ def upload_csv(request):
         data = {}
 
         for i, value in enumerate(row):
+
             this_field = input_fields[i]
             # if species information, check if already exists, if not initialize new species
             if this_field.lower() in species_fields:
@@ -77,9 +79,11 @@ def upload_csv(request):
         Observation.objects.update_or_create(
             ufi = observation_dict['ufi'],
             species = Species.objects.filter(taxon_id=species_dict['taxon_id']).first(),
-            survey_start_date = datetime.datetime.strptime(observation_dict['survey_start_date'], '%d/%b/%Y').strftime('%Y-%m-%d'),
+            # survey_start_date = datetime.datetime.strptime(observation_dict['survey_start_date'], '%d-%b-%y').strftime('%Y-%m-%d'),
             latitudedd_num = observation_dict['latitudedd_num'],
             longitudedd_num = observation_dict['longitudedd_num'],
             data = data,
             scraped = 'placeholder',
         )
+    
+    return render(request, 'admin/observation/observation')
