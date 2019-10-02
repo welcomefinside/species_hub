@@ -2,7 +2,7 @@ from django.contrib import admin
 from observation.models import Observation, Species
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
-from observation.list_filters import ObservationListFilter
+from observation.list_filters import ObservationListFilter, TimeListFilter
 
 # Register your models here.
 def train_estimator(modeladmin, request, queryset):
@@ -22,7 +22,7 @@ def train_estimator(modeladmin, request, queryset):
 class ObservationAdmin(admin.ModelAdmin):
     list_display = ['ufi', 'species', 'date_added', 'date_modified']
     actions = [train_estimator,]
-    list_filter = [ObservationListFilter,]  ## one more date filter need to be done, i am on my way, it will be easy after i done the first filter
+    list_filter = [ObservationListFilter, TimeListFilter,]  ## one more date filter need to be done, i am on my way, it will be easy after i done the first filter
 
 admin.site.register(Observation, ObservationAdmin)
 
