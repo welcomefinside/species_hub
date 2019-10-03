@@ -2,10 +2,18 @@ from django.contrib import admin
 from observation.models import Observation, Species
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
+from .views import train_estimator_view
 
 # Register your models here.
 def train_estimator(modeladmin, request, queryset):
-    # passing the quertsets to other views which is doing the training
+    if 'apply' in request.POST:
+        '''
+        this function will handle all the user inputs
+        '''
+        ## get json data
+        data = request.POST # pseudocode
+        train_estimator_view(data)
+        return
     variable_names = ['latitude', 'longtitude']
     species_names = []
 

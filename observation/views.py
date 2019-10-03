@@ -87,3 +87,10 @@ def upload_csv(request):
         )
     
     return render(request, 'admin/observation/observation')
+
+def train_estimator_view(data):
+    data = {'species':'aa', 'variable_name': 'bb'}
+    species = [data.species]
+    variable_name = [data.variable_name]
+
+    ## connect to back end to train estimators
