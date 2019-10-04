@@ -125,6 +125,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-
 # Max field that can be updated
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 20000
