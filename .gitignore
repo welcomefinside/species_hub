@@ -105,3 +105,7 @@ venv.bak/
 
 #
 .DS_Store
+.vscode
+
+# engine
+engine_1858
