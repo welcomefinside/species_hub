@@ -5,7 +5,6 @@ from django import forms
 import uuid
 
 class Estimator(models.Model):
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
 
     # scaler options
@@ -47,3 +46,7 @@ class Estimator(models.Model):
     validate_size = models.FloatField('validate')
 
     dataset = ArrayField(models.UUIDField(null=True))
+
+class TrainedEstimator(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    pickled_estimator = models.BinaryField('pickled_estimator')
