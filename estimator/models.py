@@ -42,10 +42,14 @@ class Estimator(models.Model):
         (TRAIN_TEST_VALIDATE, 'train-test-validate'),
     )
     split_type = models.CharField('tt_split', choices=TRAIN_TEST_SPLIT_OPTIONS, default=NONE, max_length=10)
-    test_size = models.FloatField('test')
-    validate_size = models.FloatField('validate')
+    test_size = models.FloatField('test', null=True, blank=True)
+    validate_size = models.FloatField('validate', null=True, blank=True)
 
-    dataset = ArrayField(models.UUIDField(null=True))
+    dataset = ArrayField(models.UUIDField(null=True, blank=True))
+
+    # def save(self, *args, **kwargs):
+    #     if not self.scaler_set:
+    #         super().save(self, *args, **kwargs)
 
 class TrainedEstimator(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)

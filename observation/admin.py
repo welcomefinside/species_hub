@@ -2,12 +2,22 @@ from django.contrib import admin
 from observation.models import Observation, Species, ObservationImport
 from django.utils.safestring import mark_safe
 from django.urls import reverse
+from estimator.models import Estimator
+import uuid
 
 # Register your models here.
-def train_estimator(modeladmin, request, queryset):
-    ## passing the quertsets to other views which is doing the training
-    # for item in queryset:
-    #     print(item.ufi)
+def create_estimator_observation(modeladmin, request, queryset):
+    observation_id = []
+    for observation in queryset:
+        observation_id.append(observation.id)
+
+    new_estimator = Estimator.objects.update_or_create(
+        id=uuid.uuid4(),
+        dataset=observation_id,
+    )
+
+    new_estimator[0].save()
+
     return
     
 def ipdb_helper(modeladmin, request, queryset):
@@ -16,6 +26,7 @@ def ipdb_helper(modeladmin, request, queryset):
 
 class ObservationAdmin(admin.ModelAdmin):
     list_display = ['ufi', 'species', 'observation_import_link', 'date_added']
+    actions = [create_estimator_observation,]
 
     def observation_import_link(self, observation):
         url = reverse('admin:observation_observationimport_change', args=[observation.observation_import.id])

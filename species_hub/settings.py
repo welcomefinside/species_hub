@@ -80,8 +80,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         'NAME': 'species_db',
-        'USER': 'species_db_user',
-        'PASSWORD': 'password',
+        'USER': 'postgres',
+        'PASSWORD': '123078',
         'HOST': 'localhost',
         'PORT': '',
     }
