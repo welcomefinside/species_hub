@@ -1,5 +1,6 @@
 import sys, os
-sys.path.append(os.path.abspath('../engine_1858'))
+
+sys.path.append(os.path.abspath("../engine_1858"))
 
 from django.contrib import admin
 from .models import Estimator, TrainedEstimator
@@ -9,7 +10,10 @@ import uuid
 import pickle
 from engine_1858.estimator import DWELPModel
 import sample_models
-
+import pandas as pd
+import numpy as np
+from functools import reduce
+from io import BytesIO
 
 # class EstimatorAdmin(admin.ModelAdmin):
 # def save_model(self, request, obj, form, change):
@@ -23,115 +27,119 @@ def train_estimator(modeladmin, request, queryset):
     estimator_obj = queryset[0]
     ## 1. data
     id_list = estimator_obj.dataset
-    data = read_frame(Observation.objects.filter(id__in=id_list), fieldnames=('ufi', 'species', 'latitudedd_num', 'longitudedd_num', 'lat_long_accuracydd_int', 'sampling_method_desc', 'record_type', 'sv_record_count', 'lga_ufi', 'cma_no', 'park_id', 'survey_id', 'reliability', 'reliability_txt', 'rating_int'))
-    data = data.replace(to_replace='nan', value='')
-    ## 2. tag_dic
-    # Binary Columns
-    binary_columns = ['sampling_method_desc',
-                    'record_type',
-                    'lga_ufi',
-                    'cma_no']
-    # Integer Columns
-    integer_columns = ['lat_long_accuracydd_int',
-                    'sv_record_count']
-    # Target Columns
-    target_column = ['reliability']
+    data = read_frame(
+        Observation.objects.filter(id__in=id_list),
+        fieldnames=(
+            "ufi",
+            "species",
+            "latitudedd_num",
+            "longitudedd_num",
+            "lat_long_accuracydd_int",
+            "sampling_method_desc",
+            "record_type",
+            "sv_record_count",
+            "lga_ufi",
+            "cma_no",
+            "park_id",
+            "survey_id",
+            "reliability",
+            "reliability_txt",
+            "rating_int",
+        ),
+    )
+    data = data.replace(to_replace="nan", value="")
 
-    tag_dict = {'id': ['species'],
-            'binary': binary_columns,
-            'integer': integer_columns,
-            'target': target_column}
+    ## 2. tag dictionary
+    binary_columns = ["sampling_method_desc", "record_type", "lga_ufi", "cma_no"]
+    integer_columns = ["lat_long_accuracydd_int", "sv_record_count"]
+    target_column = ["reliability"]
+    tag_dict = {
+        "id": ["species"],
+        "binary": binary_columns,
+        "integer": integer_columns,
+        "target": target_column,
+    }
 
     ## 3. configuration_dict
     # search_parameters
-    search_parameters = dict(scoring='roc_auc',
-                         n_jobs=4,
-                         n_iter=5,
-                         verbose=2,
-                         cv=3,
-                         refit=True,
-                         return_train_score=True)
+    search_parameters = dict(
+        scoring="roc_auc",
+        n_jobs=4,
+        n_iter=5,
+        verbose=2,
+        cv=3,
+        refit=True,
+        return_train_score=True,
+    )
+
     # scaler_set
-    # scaler = estimator_obj.scaler_set
-    # scaler_set = {'scaler': [scaler]}
-    scaler_set = {'scaler': ['none']}
+    scaler = estimator_obj.scaler_set
+    scaler_set = {"scaler": [scaler]}
+
     # dimensionality_reduction_set
     reduce_dim = estimator_obj.dimensionality_reduction_set
-    if reduce_dim == 'none':
-        dimensionality_reduction_set = {'reduce_dim': ['none']}
+    if reduce_dim == "none":
+        dimensionality_reduction_set = {"reduce_dim": ["none"]}
     else:
         dimensionality_reduction_set = {
-            'reduce_dim':[reduce_dim],
-            'reduce_dim__n_components': [10]
+            "reduce_dim": [reduce_dim],
+            "reduce_dim__n_components": [10],
         }
-    
+
     configuration_dict = {
-        'search_parameters': search_parameters,
-        'scaler_set': scaler_set,
-        'dimensionality_reduction_set': dimensionality_reduction_set,
-        'model_config_list': sample_models.models
+        "search_parameters": search_parameters,
+        "scaler_set": scaler_set,
+        "dimensionality_reduction_set": dimensionality_reduction_set,
+        "model_config_list": sample_models.models,
     }
 
     ## 4. cc_pipe_kwargs
-    cond_imp_args = dict(tag_dict=tag_dict,
-                     conditioning_column=tag_dict['id'])
+    cond_imp_args = dict(tag_dict=tag_dict, conditioning_column=tag_dict["id"][0])
 
-    binariser_args = dict(binary_columns=tag_dict['binary'])
+    binariser_args = dict(binary_columns=tag_dict["binary"], id_col="species")
 
     cc_pipe_kwargs = dict(fit_arg_list=[cond_imp_args, binariser_args])
 
     ## 5. split_type
-    
+
     split_type = estimator_obj.split_type
 
     # 6. split_kwargs
 
-    if split_type == 'none':
-        split_kwargs={
-            'test_size': 0.33, 
-            'stratify': ['species','reliability']
+    if split_type == "tvt":
+        split_kwargs = {
+            "test_size": estimator_obj.test_size,
+            "validate_size": estimator_obj.validate_size,
+            "stratify": ["species", "reliability"],
         }
-    elif split_type == 'tt':
-        split_kwargs={
-            'test_size': estimator_obj.test_size, 
-            'stratify': ['species','reliability']
+    elif split_type == "tt":
+        split_kwargs = {
+            "test_size": estimator_obj.test_size,
+            "stratify": ["species", "reliability"],
         }
     else:
-        split_kwargs={
-            'test_size': estimator_obj.test_size, 
-            'validate_size': estimator_obj.validate_size,
-            'stratify': ['species','reliability']
-        }
+        split_kwargs = {"test_size": 0.33, "stratify": ["species", "reliability"]}
 
-    # split_kwargs={
-    #     'test_size': 0.33,
-    #     'stratify': ['species','reliability']
-    # }
-
-    import ipdb; ipdb.set_trace()
     delwp_estimator = DWELPModel(
-        data,
-        tag_dict,
-        configuration_dict,
-        cc_pipe_kwargs,
-        split_type,
-        split_kwargs
+        data, tag_dict, configuration_dict, cc_pipe_kwargs, split_type, split_kwargs
     )
 
     estimator_file_name = "estimator.pkl"
-    estimator_pkl = open(estimator_file_name, 'wb')
-    pickle.dump(delwp_estimator, estimator_pkl)
-    estimator_pkl.close()
+    estimator_pkl = pickle.dumps(delwp_estimator)
 
-    TrainedEstimator.objects.update_or_create(
-        id=uuid.uuid4(),
-        pickled_estimator=estimator_pkl
-    ).save()
+    import ipdb
+
+    ipdb.set_trace()
+
+    trained_estimator_object, created = TrainedEstimator.objects.update_or_create(
+        id=uuid.uuid4(), pickled_estimator=estimator_pkl
+    )
+    trained_estimator_object.save()
     return
 
 
 class EstimatorAdmin(admin.ModelAdmin):
-    actions = [train_estimator, ]
+    actions = [train_estimator]
 
 
 admin.site.register(Estimator, EstimatorAdmin)
