@@ -113,6 +113,6 @@ engine_1858
 # ignore csv files and imports
 *.csv
 imports/
-
+raster_file/
 # igonore migrations files - all migrations to be handled locally for now
 */migrations/

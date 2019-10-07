@@ -54,3 +54,5 @@ class Estimator(models.Model):
 class TrainedEstimator(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
     pickled_estimator = models.BinaryField('pickled_estimator')
+    relatived_species = ArrayField(models.UUIDField(null=True, blank=True), null=True, blank=True)
+    trianed_observation = ArrayField(models.UUIDField(null=True, blank=True), null=True, blank=True)
