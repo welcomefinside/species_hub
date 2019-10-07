@@ -54,3 +54,9 @@ class Estimator(models.Model):
 class TrainedEstimator(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
     pickled_estimator = models.BinaryField('pickled_estimator')
+
+class RasterFileImport(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    raster_file_original = models.FileField('Raster_File', upload_to='raster_file/%Y/%m/%d/', null=False)
+    raster_file_transferred = models.BinaryField('pickled_raster_file')
+    date_added = models.DateField('DATE ADDED', auto_now_add=True)

@@ -57,6 +57,7 @@ class ObservationImport(models.Model):
     date_added = models.DateField('DATE ADDED', auto_now_add=True)
     date_modified = models.DateField('DATE MODIFIED', auto_now=True)
     remarks = models.TextField('REMARKS', null=True, blank=True)
+    land_df = models,ArrayField(models.IntegerField(), null=True, blank=True)
 
 
 @receiver(post_save, sender=ObservationImport, dispatch_uid="add_records_to_observation_from_import")

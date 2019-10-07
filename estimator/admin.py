@@ -2,11 +2,12 @@ import sys, os
 sys.path.append(os.path.abspath('../engine_1858'))
 
 from django.contrib import admin
-from .models import Estimator, TrainedEstimator
+from .models import Estimator, TrainedEstimator, RasterFileImport
 from observation.models import Observation, Species
 from django_pandas.io import read_frame
 import uuid
 import pickle
+from engine_1858.estimator import DWELPModel
 
 
 # class EstimatorAdmin(admin.ModelAdmin):
@@ -21,9 +22,19 @@ def train_estimator(modeladmin, request, queryset):
     estimator_obj = queryset[0]
     ## 1. data
     id_list = estimator_obj.dataset
-    data = read_frame(Observation.objects.filter(pk__in=id_list))
+    data_list = Observation.objects.filter(pk__in=id_list)
+    species_id_list = []
+    for species in data_list.values('species').distinct():
+        species_id_list.append(species['species'])
+    
+    species_list = Species.objects.filter(pk__in=species_id_list)
+
+    # species_name_list = data_list.
+    data = read_frame(data_list)
+    # addition_data = 
     ## 2. tag_dic
     # Binary Columns
+    import ipdb; ipdb.set_trace()
     binary_columns = ['sampling_method_desc',
                     'record_type',
                     'primary_cde',
@@ -79,7 +90,7 @@ def train_estimator(modeladmin, request, queryset):
 
     ## 5. split_type
     
-    split_type = estimator_obj.split_type
+    # split_type = estimator_obj.split_type
 
     ## 6. split_kwargs
 
@@ -100,10 +111,10 @@ def train_estimator(modeladmin, request, queryset):
     #         'stratify': ['common_nme']
     #     }
 
-    split_kwargs={
-        'test_size': 0.33,
-        'stratify': ['common_nme']
-    }
+    # split_kwargs={
+    #     'test_size': 0.33,
+    #     'stratify': ['common_nme']
+    # }
     
     # delwp_estimator = DWELPModel(
     #     data,
@@ -123,6 +134,14 @@ def train_estimator(modeladmin, request, queryset):
     #     id=uuid.uuid4(),
     #     pickled_estimator=estimator_pkl
     # ).save()
+
+    demo_dewlp_model = DWELPModel(data,
+                              tag_dict,
+                              configuration_dict,
+                              cc_pipe_kwargs,
+                              split_type='tt',
+                              split_kwargs={'test_size': 0.33,
+                                            'stratify': ['common_nme']})
     return
 
 
@@ -130,5 +149,14 @@ class EstimatorAdmin(admin.ModelAdmin):
     actions = [train_estimator, ]
 
 
+def transfer_file(modeladmin, request, queryset):
+    ## transfer the original files into database storable type 
+    return
+
+class RasterFileImportAdmin(admin.ModelAdmin):
+    actions = [transfer_file]
+
+
 admin.site.register(Estimator, EstimatorAdmin)
 admin.site.register(TrainedEstimator)
+admin.site.register(RasterFileImport, RasterFileImportAdmin)
