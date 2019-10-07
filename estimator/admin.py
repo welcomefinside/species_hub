@@ -209,7 +209,8 @@ def predict(modeladmin, request, queryset):
 
         import ipdb; ipdb.set_trace()
 
-        import ipdb; ipdb.set_trace()
+
+        ## final part to write all the data in the data base and finish the prediction
         for i in range(output_frame['ufi'].count()):
             observation = Observation.objects.filter(ufi=output_frame['ufi'][i])[0]
             estimator.trianed_observation.append(observation.id)
