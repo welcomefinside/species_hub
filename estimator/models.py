@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django import forms
-# from observation.models import Observation
 
 import uuid
 
@@ -55,4 +54,4 @@ class Estimator(models.Model):
 class TrainedEstimator(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
     pickled_estimator = models.BinaryField('pickled_estimator')
-    # predict_observations = models.ForeignKey(to='Observation', on_delete=models.SET_NULL, null=True, blank=True)
+    predict_observations = models.ForeignKey(to='observation.ObservationImport', on_delete=models.SET_NULL, null=True, blank=True)

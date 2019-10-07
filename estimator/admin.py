@@ -123,9 +123,13 @@ def train_estimator(modeladmin, request, queryset):
         }
     
     print("Initializing estimator...")
+    # import ipdb; ipdb.set_trace()
     delwp_estimator = DWELPModel(
         data, tag_dict, configuration_dict, cc_pipe_kwargs, split_type, split_kwargs
     )
+
+    print("Training model with set configuration...")
+    delwp_estimator.train()
 
     print("Pickling estimator...")
     estimator_file_name = "estimator.pkl"
@@ -140,10 +144,22 @@ def train_estimator(modeladmin, request, queryset):
     trained_estimator_object.save()
     return
 
+def predict(modeladmin, request, queryset):
+    # we will only allow the prediction of one model at a time for now
+    if len(queryset) > 1:
+        return
+    trained_estimator_object = queryset.last()
+    estimator_pkl = trained_estimator_object.pickled_estimator
+    t_estimator = pickle.loads(estimator_pkl)
+    predict_observations = trained_estimator_object.predict_observations
+    import ipdb; ipdb.set_trace()
+
 
 class EstimatorAdmin(admin.ModelAdmin):
     actions = [train_estimator]
 
+class TrainedEstimatorAdmin(admin.ModelAdmin):
+    actions = [predict]
 
 admin.site.register(Estimator, EstimatorAdmin)
-admin.site.register(TrainedEstimator)
+admin.site.register(TrainedEstimator, TrainedEstimatorAdmin)
