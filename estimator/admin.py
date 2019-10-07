@@ -23,7 +23,8 @@ def train_estimator(modeladmin, request, queryset):
     estimator_obj = queryset[0]
     ## 1. data
     id_list = estimator_obj.dataset
-    data = read_frame(Observation.objects.filter(pk__in=id_list))
+    data = read_frame(Observation.objects.filter(id__in=id_list), fieldnames=('ufi', 'species', 'latitudedd_num', 'longitudedd_num', 'lat_long_accuracydd_int', 'sampling_method_desc', 'record_type', 'sv_record_count', 'lga_ufi', 'cma_no', 'park_id', 'survey_id', 'reliability', 'reliability_txt', 'rating_int'))
+    data = data.replace(to_replace='nan', value='')
     ## 2. tag_dic
     # Binary Columns
     binary_columns = ['sampling_method_desc',
@@ -88,25 +89,25 @@ def train_estimator(modeladmin, request, queryset):
     if split_type == 'none':
         split_kwargs={
             'test_size': 0.33, 
-            'stratify': ['species']
+            'stratify': ['species','reliability']
         }
     elif split_type == 'tt':
         split_kwargs={
             'test_size': estimator_obj.test_size, 
-            'stratify': ['species']
+            'stratify': ['species','reliability']
         }
     else:
         split_kwargs={
             'test_size': estimator_obj.test_size, 
             'validate_size': estimator_obj.validate_size,
-            'stratify': ['species']
+            'stratify': ['species','reliability']
         }
 
-    split_kwargs={
-        'test_size': 0.33,
-        'stratify': ['species']
-    }
-    
+    # split_kwargs={
+    #     'test_size': 0.33,
+    #     'stratify': ['species','reliability']
+    # }
+
     import ipdb; ipdb.set_trace()
     delwp_estimator = DWELPModel(
         data,
