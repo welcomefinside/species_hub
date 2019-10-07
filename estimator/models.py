@@ -45,7 +45,7 @@ class Estimator(models.Model):
     test_size = models.FloatField('test', null=True, blank=True)
     validate_size = models.FloatField('validate', null=True, blank=True)
 
-    dataset = ArrayField(models.UUIDField(null=True, blank=True))
+    dataset = ArrayField(models.CharField(max_length=36, null=True, blank=True))
 
     # def save(self, *args, **kwargs):
     #     if not self.scaler_set:

@@ -19,19 +19,19 @@ class Observation(models.Model):
     date_modified = models.DateField('DATE_MODIFIED', auto_now=True)
     latitudedd_num = models.FloatField('LATITUDEDD_NUM')
     longitudedd_num = models.FloatField('LONGITUDEDD_NUM')
-    lat_long_accuracydd_int = models.IntegerField('LAT_LONG_ACCURACYDD_INT')
+    lat_long_accuracydd_int = models.FloatField('LAT_LONG_ACCURACYDD_INT')
     sampling_method_desc = models.CharField('SAMPLING_METHOD_DESC', max_length=100)
     record_type = models.CharField('RECORD_TYPE', max_length=100, null=True, blank=True)
-    sv_record_count = models.IntegerField('SV_RECORD_COUNT', null=True, blank=True)
-    lga_ufi = models.IntegerField('LGA_UFI', null=True, blank=True)
-    cma_no = models.IntegerField('CMA_NO', null=True, blank=True)
-    park_id = models.IntegerField('PARK_ID', null=True, blank=True)
-    survey_id = models.IntegerField('SURVEY_ID', null=True, blank=True)
+    sv_record_count = models.FloatField('SV_RECORD_COUNT', null=True, blank=True)
+    lga_ufi = models.FloatField('LGA_UFI', null=True, blank=True)
+    cma_no = models.FloatField('CMA_NO', null=True, blank=True)
+    park_id = models.FloatField('PARK_ID', null=True, blank=True)
+    survey_id = models.FloatField('SURVEY_ID', null=True, blank=True)
 
     # target variables
     reliability = models.CharField('RELIABILITY', max_length=20, null=True, blank=True)
     reliability_txt = models.CharField('RELIABILITY_TXT', max_length=20, null=True, blank=True)
-    rating_int = models.IntegerField('RATING_INT', null=True, blank=True)
+    rating_int = models.FloatField('RATING_INT', null=True, blank=True)
 
 
     def __str__(self):
@@ -48,7 +48,7 @@ class Species(models.Model):
     primary_cde = models.CharField('PRIMARY_CDE', max_length=5)
 
     def __str__(self):
-        return self.scientific_display_nme
+        return self.taxon_id
 
 class ObservationImport(models.Model):
     """Model representing an entire batch import"""
@@ -70,10 +70,13 @@ def add_records_to_observation_from_import(sender, instance, **kwargs):
 
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-            
-        data.columns = cols
-        data = data.replace(numpy.nan, None, regex=True)
         
+        data.columns = cols
+
+        data['reliability'] = data['reliability'].replace(to_replace=numpy.nan, value='', regex=True)
+        data['record_type'] = data['record_type'].replace(to_replace=numpy.nan, value='', regex=True)
+        data = data.where(pandas.notnull(data), None)
+
         for index, row in data.iterrows():
 
             # check if species exists, if not create a species object
