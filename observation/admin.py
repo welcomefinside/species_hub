@@ -5,8 +5,7 @@ from django.urls import reverse
 from estimator.models import Estimator
 import uuid
 
-# Register your models here.
-def create_estimator_by_observations(modeladmin, request, queryset):
+def create_estimator(queryset):
     observation_id = []
     for observation in queryset:
         observation_id.append(observation.id)
@@ -15,8 +14,22 @@ def create_estimator_by_observations(modeladmin, request, queryset):
         id=uuid.uuid4(),
         dataset=observation_id,
     )
-
     new_estimator[0].save()
+    return
+
+# Register your models here.
+def create_estimator_by_observations(modeladmin, request, queryset):
+    # observation_id = []
+    # for observation in queryset:
+    #     observation_id.append(observation.id)
+
+    # new_estimator = Estimator.objects.update_or_create(
+    #     id=uuid.uuid4(),
+    #     dataset=observation_id,
+    # )
+
+    # new_estimator[0].save()
+    create_estimator(queryset)
 
     return
     
@@ -42,4 +55,23 @@ class ObservationAdmin(admin.ModelAdmin):
 
 admin.site.register(Observation, ObservationAdmin)
 admin.site.register(Species)
+
+def create_estimator_by_observation_import(modeladmin, request, queryset):
+    # observation_id = []
+    # for observation in queryset:
+    #     observation_id.append(observation.id)
+
+    # new_estimator = Estimator.objects.update_or_create(
+    #     id=uuid.uuid4(),
+    #     dataset=observation_id,
+    # )
+
+    # new_estimator[0].save()
+    observation_queryset = Observation.objects.filter(observation_import__in=queryset)
+    create_estimator(observation_queryset)
+    return
+
+class ObservationAdmin(admin.ModelAdmin):
+    actions = [create_estimator_by_observation_import]
+
 admin.site.register(ObservationImport)
