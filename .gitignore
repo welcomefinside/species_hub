@@ -109,3 +109,10 @@ venv.bak/
 
 # engine
 engine_1858
+
+# ignore csv files and imports
+*.csv
+imports/
+
+# igonore migrations files - all migrations to be handled locally for now
+*/migrations/
