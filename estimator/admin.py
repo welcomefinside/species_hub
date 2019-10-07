@@ -3,10 +3,11 @@ sys.path.append(os.path.abspath('../engine_1858'))
 
 from django.contrib import admin
 from .models import Estimator, TrainedEstimator
-from observation.models import Observation, Species
+from observation.models import Observation, Species, ObservationImport
 from django_pandas.io import read_frame
 import uuid
 import pickle
+from engine_1858.estimator import DWELPModel
 
 
 # class EstimatorAdmin(admin.ModelAdmin):
@@ -131,4 +132,32 @@ class EstimatorAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Estimator, EstimatorAdmin)
-admin.site.register(TrainedEstimator)
+
+
+def predict(modeladmin, request, queryset):
+    '''
+    this function is used to predict all observations
+    given a queryset of trained estimator
+    if the observation is trained by the estimator or the species name relative is not trained by the model
+    it will skip the observation,
+    else predict the observation and add the observation id into train_observation array field
+    '''
+    csv_id_list = []
+    for csv in ObservationImport.objects.all():
+        csv_id_list.append(csv.id)
+    
+    observation_queryset = Observation.objects.filter(observation_import__in=csv_id_list)
+
+    for estimator in queryset:
+        load_estimator = pickle.loads(estimator.pickled_estimator)
+        trained_observation_list = estimator.trained_observation
+        related_species_list = estimator.relatived_species
+        for observation in observation_queryset.filter()
+
+    import ipdb; ipdb.set_trace()
+    return
+
+class TrainEstimatorAdmin(admin.ModelAdmin):
+    actions = [predict]
+
+admin.site.register(TrainedEstimator, TrainEstimatorAdmin)
