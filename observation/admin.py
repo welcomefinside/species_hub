@@ -25,7 +25,10 @@ def ipdb_helper(modeladmin, request, queryset):
     return
 
 class ObservationAdmin(admin.ModelAdmin):
-    list_display = ['ufi', 'species', 'observation_import_link', 'date_added']
+    list_display = ['ufi', 'species', 'date_added', 'latitudedd_num', 'longitudedd_num',
+       'lat_long_accuracydd_int', 'sampling_method_desc', 'record_type',
+       'sv_record_count', 'lga_ufi', 'cma_no', 'park_id', 'survey_id',
+       'reliability', 'reliability_txt', 'rating_int']
     actions = [create_estimator_by_observations,]
 
     def observation_import_link(self, observation):
