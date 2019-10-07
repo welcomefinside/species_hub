@@ -7,6 +7,8 @@ from observation.models import Observation, Species
 from django_pandas.io import read_frame
 import uuid
 import pickle
+from engine_1858.estimator import DWELPModel
+import sample_models
 
 
 # class EstimatorAdmin(admin.ModelAdmin):
@@ -26,7 +28,6 @@ def train_estimator(modeladmin, request, queryset):
     # Binary Columns
     binary_columns = ['sampling_method_desc',
                     'record_type',
-                    'primary_cde',
                     'lga_ufi',
                     'cma_no']
     # Integer Columns
@@ -35,7 +36,7 @@ def train_estimator(modeladmin, request, queryset):
     # Target Columns
     target_column = ['reliability']
 
-    tag_dict = {'id': ['common_nme'],
+    tag_dict = {'id': ['species'],
             'binary': binary_columns,
             'integer': integer_columns,
             'target': target_column}
@@ -62,11 +63,12 @@ def train_estimator(modeladmin, request, queryset):
             'reduce_dim':[reduce_dim],
             'reduce_dim__n_components': [10]
         }
-
+    
     configuration_dict = {
         'search_parameters': search_parameters,
         'scaler_set': scaler_set,
-        'dimensionality_reduction_set': dimensionality_reduction_set
+        'dimensionality_reduction_set': dimensionality_reduction_set,
+        'model_config_list': sample_models.models
     }
 
     ## 4. cc_pipe_kwargs
@@ -81,48 +83,49 @@ def train_estimator(modeladmin, request, queryset):
     
     split_type = estimator_obj.split_type
 
-    ## 6. split_kwargs
+    # 6. split_kwargs
 
-    # if split_type == 'none':
-    #     split_kwargs={
-    #         'test_size': 0.33, 
-    #         'stratify': ['common_nme']
-    #     }
-    # elif split_type == 'tt':
-    #     split_kwargs={
-    #         'test_size': estimator_obj.test_size, 
-    #         'stratify': ['common_nme']
-    #     }
-    # else:
-    #     split_kwargs={
-    #         'test_size': estimator_obj.test_size, 
-    #         'validate_size': estimator_obj.validate_size,
-    #         'stratify': ['common_nme']
-    #     }
+    if split_type == 'none':
+        split_kwargs={
+            'test_size': 0.33, 
+            'stratify': ['species']
+        }
+    elif split_type == 'tt':
+        split_kwargs={
+            'test_size': estimator_obj.test_size, 
+            'stratify': ['species']
+        }
+    else:
+        split_kwargs={
+            'test_size': estimator_obj.test_size, 
+            'validate_size': estimator_obj.validate_size,
+            'stratify': ['species']
+        }
 
     split_kwargs={
         'test_size': 0.33,
-        'stratify': ['common_nme']
+        'stratify': ['species']
     }
     
-    # delwp_estimator = DWELPModel(
-    #     data,
-    #     tag_dict,
-    #     configuration_dict,
-    #     cc_pipe_kwargs,
-    #     split_type,
-    #     split_kwargs
-    # )
+    import ipdb; ipdb.set_trace()
+    delwp_estimator = DWELPModel(
+        data,
+        tag_dict,
+        configuration_dict,
+        cc_pipe_kwargs,
+        split_type,
+        split_kwargs
+    )
 
-    # estimator_file_name = "estimator.pkl"
-    # estimator_pkl = open(estimator_file_name, 'wb')
-    # pickle.dump(delwp_estimator, estimator_pkl)
-    # estimator_pkl.close()
+    estimator_file_name = "estimator.pkl"
+    estimator_pkl = open(estimator_file_name, 'wb')
+    pickle.dump(delwp_estimator, estimator_pkl)
+    estimator_pkl.close()
 
-    # TrainedEstimator.objects.update_or_create(
-    #     id=uuid.uuid4(),
-    #     pickled_estimator=estimator_pkl
-    # ).save()
+    TrainedEstimator.objects.update_or_create(
+        id=uuid.uuid4(),
+        pickled_estimator=estimator_pkl
+    ).save()
     return
 
 

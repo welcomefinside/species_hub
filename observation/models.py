@@ -48,7 +48,7 @@ class Species(models.Model):
     primary_cde = models.CharField('PRIMARY_CDE', max_length=5)
 
     def __str__(self):
-        return self.scientific_display_nme
+        return self.taxon_id
 
 class ObservationImport(models.Model):
     """Model representing an entire batch import"""
