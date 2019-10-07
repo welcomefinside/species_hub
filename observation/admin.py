@@ -6,7 +6,7 @@ from estimator.models import Estimator
 import uuid
 
 # Register your models here.
-def create_estimator_observation(modeladmin, request, queryset):
+def create_estimator_by_observations(modeladmin, request, queryset):
     observation_id = []
     for observation in queryset:
         observation_id.append(observation.id)
@@ -26,7 +26,7 @@ def ipdb_helper(modeladmin, request, queryset):
 
 class ObservationAdmin(admin.ModelAdmin):
     list_display = ['ufi', 'species', 'observation_import_link', 'date_added']
-    actions = [create_estimator_observation,]
+    actions = [create_estimator_by_observations,]
 
     def observation_import_link(self, observation):
         url = reverse('admin:observation_observationimport_change', args=[observation.observation_import.id])
