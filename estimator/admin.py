@@ -148,11 +148,28 @@ def predict(modeladmin, request, queryset):
     # we will only allow the prediction of one model at a time for now
     if len(queryset) > 1:
         return
+    # unpickle model
     trained_estimator_object = queryset.last()
     estimator_pkl = trained_estimator_object.pickled_estimator
     t_estimator = pickle.loads(estimator_pkl)
-    predict_observations = trained_estimator_object.predict_observations
+
+    # predict_observations = trained_estimator_object.predict_observations.csv
+    # data = pd.read_csv(predict_observations)
+
+    data = pd.read_csv('./test_predict.csv')
+    # col_list = data.columns.to_list()
+    # col_list[1] = 'SPECIES'
+    # data.columns = col_list
+
+    # Lower column names
+    # cols = data.columns.tolist()
+    # for i, col in enumerate(cols):
+    #     cols[i] = col.lower()
+    # data.columns = cols
+    
     import ipdb; ipdb.set_trace()
+
+    prediction = t_estimator.predict(data, already_processed=False)
 
 
 class EstimatorAdmin(admin.ModelAdmin):
