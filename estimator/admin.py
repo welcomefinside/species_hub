@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath("../engine_1858"))
 
 from django.contrib import admin
 from .models import Estimator, TrainedEstimator
-from observation.models import Observation, Species
+from observation.models import Observation, Species, ObservationImport
 from django_pandas.io import read_frame
 import uuid
 import pickle
@@ -50,6 +50,11 @@ def train_estimator(modeladmin, request, queryset):
         ),
     )
     data = data.replace(to_replace="nan", value="")
+
+    ## add related species
+    related_species = []
+    for observation in Observation.objects.filter(id__in=id_list).values('species').distinct():
+        related_species.append(observation['species'])
 
     ## 2. tag dictionary
     print("Preparing tag dictionary...")
@@ -126,6 +131,7 @@ def train_estimator(modeladmin, request, queryset):
     delwp_estimator = DWELPModel(
         data, tag_dict, configuration_dict, cc_pipe_kwargs, split_type, split_kwargs
     )
+    delwp_estimator.train()
 
     print("Pickling estimator...")
     estimator_file_name = "estimator.pkl"
@@ -133,7 +139,9 @@ def train_estimator(modeladmin, request, queryset):
 
     print("Creating TrainedEstimator object...")
     trained_estimator_object, created = TrainedEstimator.objects.update_or_create(
-        id=uuid.uuid4(), pickled_estimator=estimator_pkl
+        id=uuid.uuid4(), 
+        pickled_estimator=estimator_pkl,
+        relatived_species = related_species
     )
 
     print("Saving TrainedEstimator object...")
@@ -144,6 +152,71 @@ def train_estimator(modeladmin, request, queryset):
 class EstimatorAdmin(admin.ModelAdmin):
     actions = [train_estimator]
 
-
 admin.site.register(Estimator, EstimatorAdmin)
-admin.site.register(TrainedEstimator)
+
+
+def predict(modeladmin, request, queryset):
+    '''
+    this function is used to predict all observations
+    given a queryset of trained estimator
+    if the observation is trained by the estimator or the species name relative is not trained by the model
+    it will skip the observation,
+    else predict the observation and add the observation id into train_observation array field
+    '''
+    csv_id_list = []
+    for csv in ObservationImport.objects.all():
+        csv_id_list.append(csv.id)
+
+    observation_queryset = Observation.objects.filter(
+        observation_import__in=csv_id_list)
+
+    for estimator in queryset:
+        load_estimator = pickle.loads(estimator.pickled_estimator)
+        trained_observation_list = estimator.trained_observation
+        related_species_list = estimator.relatived_species
+
+        ob_set = observation_queryset.filter(species__in=related_species_list)
+        if trained_observation_list is not None:
+            ob_set = ob_set.exclude(id__in=trained_observation_list)
+
+        data = read_frame(
+            ob_set,
+            fieldnames=(
+                # "ufi",
+                "species",
+                "latitudedd_num",
+                "longitudedd_num",
+                "lat_long_accuracydd_int",
+                "sampling_method_desc",
+                # "record_type",
+                "sv_record_count",
+                "lga_ufi",
+                "cma_no",
+                # "park_id",
+                # "survey_id",
+                "reliability",
+                # "reliability_txt",
+                "rating_int",
+            ),
+        )
+        data = data.replace(to_replace="nan", value="")
+        output_frame = load_estimator.predict(data, prediction_type='classification')
+
+
+
+
+        ## final part to write all the data in the data base and finish the prediction
+        for i in range(output_frame['ufi'].count()):
+            observation = Observation.objects.filter(ufi=output_frame['ufi'][i])[0]
+            estimator.trianed_observation.append(observation.id)
+            observation.reliability = output_frame['re']
+
+
+    return
+
+
+class TrainEstimatorAdmin(admin.ModelAdmin):
+    actions = [predict, ]
+
+
+admin.site.register(TrainedEstimator, TrainEstimatorAdmin)
