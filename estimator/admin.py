@@ -175,10 +175,8 @@ def predict(modeladmin, request, queryset):
         trained_observation_list = estimator.trained_observation
         related_species_list = estimator.relatived_species
 
-
-        ob_set = observation_queryset.filter(species=related_species_list[5])
         # ob_set = observation_queryset.filter(species__in=related_species_list)
-        # ob_set = ob_set.exclude(species='650896d8-274a-407c-9672-ce9c9c1d2a66')
+        ob_set = observation_queryset.filter(species=related_species_list[0])
         if trained_observation_list is not None:
             ob_set = ob_set.exclude(id__in=trained_observation_list)
 
@@ -199,13 +197,13 @@ def predict(modeladmin, request, queryset):
                 # "survey_id",
                 "reliability",
                 # "reliability_txt",
-                "rating_int",
+                # "rating_int",
             ),
         )
         data = data.replace(to_replace="nan", value="")
-        output_frame = load_estimator.predict(data, prediction_type='classification')
+        output_frame = load_estimator.predict(data)
 
-
+        import ipdb; ipdb.set_trace()
 
 
         ## final part to write all the data in the data base and finish the prediction
