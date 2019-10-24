@@ -117,3 +117,4 @@ raster_file/
 
 # igonore migrations files - all migrations to be handled locally for now
 */migrations/
+species_hub/settings.py
