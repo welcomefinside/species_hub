@@ -6,8 +6,8 @@ from estimator.models import Estimator
 import uuid
 from observation.list_filters import ObservationListFilter, TimeListFilter
 
-# Register your models here.
-def create_estimator_by_observations(modeladmin, request, queryset):
+
+def create_estimator(queryset):
     observation_id = []
     for observation in queryset:
         observation_id.append(observation.id)
@@ -18,11 +18,27 @@ def create_estimator_by_observations(modeladmin, request, queryset):
     )
 
     new_estimator[0].save()
-
     return
+
+# Register your models here.
+def create_estimator_by_observations(modeladmin, request, queryset):
+    create_estimator(queryset)
+    return
+
+def create_estimator_by_csv(modeladmin, request, queryset):
+    csv_list = []
+    for csv in queryset:
+        csv_list.append(csv.id)
+
+    create_estimator(Observation.objects.all().filter(observation_import__in=csv_list))
+    return
+
+def create_estimator_by_species(modeladmin, request, queryset):
+    species_list = []
+    for species in queryset:
+        species_list.append(species.id)
     
-def ipdb_helper(modeladmin, request, queryset):
-    import ipdb; ipdb.set_trace()
+    create_estimator(Observation.objects.all().filter(species__in=species_list))
     return
 
 class ObservationAdmin(admin.ModelAdmin):
@@ -43,10 +59,15 @@ class ObservationAdmin(admin.ModelAdmin):
     observation_import_link.short_description = 'Associated import'
 
 admin.site.register(Observation, ObservationAdmin)
-admin.site.register(Species)
+
+class SpeciesAdmin(admin.ModelAdmin):
+    actions = [create_estimator_by_species,]
+
+admin.site.register(Species, SpeciesAdmin)
 
 
 class ObservationImportAdmin(admin.ModelAdmin):
+    actions = [create_estimator_by_csv,]
     list_filter = [TimeListFilter,]
 
 admin.site.register(ObservationImport, ObservationImportAdmin)
