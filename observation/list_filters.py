@@ -4,6 +4,9 @@ from datetime import date
 
 
 class ObservationListFilter(admin.SimpleListFilter):
+    '''
+    Generate a filter by species name, listing all the species related
+    '''
     title = 'Species'
 
     parameter_name = 'species'
@@ -21,6 +24,9 @@ class ObservationListFilter(admin.SimpleListFilter):
         return queryset
 
 class TimeListFilter(admin.SimpleListFilter):
+    '''
+    Generate a filter by time of data import
+    '''
     title = 'Time'
     parameter_name = 'date_added'
 

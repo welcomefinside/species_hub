@@ -17,6 +17,10 @@ from io import BytesIO
 
 
 def train_estimator(modeladmin, request, queryset):
+    '''
+    User are requied to input all the parameters for estimator, the estimator will include
+    particular species and pass to back end
+    '''
     print("Training estimator...")
     estimator_obj = queryset[0]
     ## 1. data

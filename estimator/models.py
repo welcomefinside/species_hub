@@ -48,9 +48,6 @@ class Estimator(models.Model):
 
     dataset = ArrayField(models.UUIDField(null=True, blank=True), null=True, blank=True)
 
-    # def save(self, *args, **kwargs):
-    #     if not self.scaler_set:
-    #         super().save(self, *args, **kwargs)
 
 class TrainedEstimator(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)

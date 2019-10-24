@@ -8,6 +8,9 @@ from observation.list_filters import ObservationListFilter, TimeListFilter
 
 
 def create_estimator(queryset):
+    '''
+    create estimator using selected observation queryset
+    '''
     observation_id = []
     for observation in queryset:
         observation_id.append(observation.id)
@@ -22,10 +25,16 @@ def create_estimator(queryset):
 
 # Register your models here.
 def create_estimator_by_observations(modeladmin, request, queryset):
+    '''
+    create estimator using selected observation queryset
+    '''
     create_estimator(queryset)
     return
 
 def create_estimator_by_csv(modeladmin, request, queryset):
+    '''
+    create estimator using selected csv files, which are converted to observation queryset
+    '''
     csv_list = []
     for csv in queryset:
         csv_list.append(csv.id)
@@ -34,6 +43,9 @@ def create_estimator_by_csv(modeladmin, request, queryset):
     return
 
 def create_estimator_by_species(modeladmin, request, queryset):
+    '''
+    create estimator using selected species, which are converted to observation queryset
+    '''
     species_list = []
     for species in queryset:
         species_list.append(species.id)
