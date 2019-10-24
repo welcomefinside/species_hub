@@ -46,7 +46,7 @@ class Estimator(models.Model):
     test_size = models.FloatField('test', null=True, blank=True)
     validate_size = models.FloatField('validate', null=True, blank=True)
 
-    dataset = ArrayField(models.UUIDField(null=True, blank=True))
+    dataset = ArrayField(models.UUIDField(null=True, blank=True), null=True, blank=True)
 
     # def save(self, *args, **kwargs):
     #     if not self.scaler_set:
@@ -56,3 +56,5 @@ class TrainedEstimator(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
     pickled_estimator = models.BinaryField('pickled_estimator')
     # predict_observations = models.ForeignKey(to='Observation', on_delete=models.SET_NULL, null=True, blank=True)
+    relatived_species = ArrayField(models.UUIDField(null=True, blank=True), null=True, blank=True)
+    trained_observation = ArrayField(models.UUIDField(null=True, blank=True), null=True, blank=True)
