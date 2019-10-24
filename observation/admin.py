@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 from django.urls import reverse
 from estimator.models import Estimator
 import uuid
+from observation.list_filters import ObservationListFilter, TimeListFilter
 
 # Register your models here.
 def create_estimator_by_observations(modeladmin, request, queryset):
@@ -30,6 +31,7 @@ class ObservationAdmin(admin.ModelAdmin):
        'sv_record_count', 'lga_ufi', 'cma_no', 'park_id', 'survey_id',
        'reliability', 'reliability_txt', 'rating_int']
     actions = [create_estimator_by_observations,]
+    list_filter = [ObservationListFilter, TimeListFilter,]
 
     def observation_import_link(self, observation):
         url = reverse('admin:observation_observationimport_change', args=[observation.observation_import.id])
@@ -42,4 +44,9 @@ class ObservationAdmin(admin.ModelAdmin):
 
 admin.site.register(Observation, ObservationAdmin)
 admin.site.register(Species)
-admin.site.register(ObservationImport)
+
+
+class ObservationImportAdmin(admin.ModelAdmin):
+    list_filter = [TimeListFilter,]
+
+admin.site.register(ObservationImport, ObservationImportAdmin)

@@ -15,13 +15,6 @@ import numpy as np
 from functools import reduce
 from io import BytesIO
 
-# class EstimatorAdmin(admin.ModelAdmin):
-# def save_model(self, request, obj, form, change):
-#     if not obj.scaler_set:
-#         super().save_model(self, request, obj, form, change)
-
-# admin.site.register(Estimator, EstimatorAdmin)
-
 
 def train_estimator(modeladmin, request, queryset):
     print("Training estimator...")
